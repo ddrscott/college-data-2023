@@ -63,7 +63,7 @@ def utr_data():
         'source.school.power6Low',
         'source.school.conference.division.divisionName',
         'source.location.latLng',
-        'source.location.stateName',
+        'source.location.cityName',
         'source.location.stateAbbr',
         'source.url',
         'source.memberCount',
@@ -88,21 +88,27 @@ def utr_cost_data():
         LATITUDE::float as latitude,
         LONGITUD::float as longitude,
         -- (try_cast(TUITION3 AS DECIMAL(10,2)) + try_cast(FEE3 as decimal(10,2)))::bigint AS total_cost,
-        CHG3AY3 AS total_cost
+        try_cast(CHG3AY3 AS DECIMAL(10,2)) AS total_cost
     FROM schools
     JOIN charges ON schools.UNITID = charges.UNITID
     """).fetchdf()
 
+    costs.to_csv(path_or_buf='data/school_costs.csv', index=False)
+
     utr = utr_data()
 
-    utr_costs = con.execute("""
+    utr_costs = con.execute(r"""
     SELECT
         utr.*,
         costs.college_id,
         costs.total_cost
     FROM utr
-    LEFT JOIN costs ON utr.name IN (costs.college_name) OR utr.shortName IN (costs.short_name)
+    LEFT JOIN costs ON
+       regexp_replace(utr.name, '\W', '', 'g') IN (regexp_replace(costs.college_name, '\W', '', 'g') )
+    OR (length(costs.short_name) > 1 and regexp_replace(utr.shortName, '\W', '', 'g') IN (regexp_replace(costs.short_name, '\W', '', 'g') ))
     """).fetchdf()
+
+    utr_costs.to_csv(path_or_buf='data/utr_costs.csv', index=False)
 
     # FIXME Strange bug if we don't convert from/to json
     return pd.read_json(utr_costs.to_json())
