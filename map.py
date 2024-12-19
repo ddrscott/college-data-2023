@@ -70,7 +70,7 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
             # Normalize total cost to the desired radius range (e.g., 5 to 50)
             normalized_value = (total_cost - min_total_cost) / (max_total_cost - min_total_cost)
             radius_range_min = 5
-            radius_rangemax_utr = 100
+            radius_range_max = 100
             return int(normalized_value * (radius_range_max - radius_range_min) + radius_range_min)
         except Exception as e:
             return 5
@@ -103,7 +103,7 @@ def main():
                     get_color='color',
                     auto_highlight=True,
                     radius_scale=200,
-                    elevation_scale=1,
+                    elevation_scale=0,
                     pickable=True,
                     get_radius='radius'
                 ),
