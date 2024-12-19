@@ -164,5 +164,11 @@ def main():
         }
     )
 
+    st.markdown("""\
+        <script defer data-domain="colleges.dataturd.com" src="https://plausible.dataturd.com/js/script.file-downloads.outbound-links.js"></script>
+        """.strip(),
+        unsafe_allow_html=True
+    )
+
 if __name__ == "__main__":
     main()
