@@ -44,11 +44,11 @@ def filter_dataframe(df: pd.DataFrame) -> pd.DataFrame:
     selected_divisions = []
     if divisions.size > 1:
         for division, count in divisions.items():
-            if side.checkbox(f"{division} ({count})", key=division):
+            if side.checkbox(f"{division} ({count})", key=division): # type: ignore
                 selected_divisions.append(division)
 
     if selected_divisions:
-        df = df[df['divisionName'].isin(selected_divisions)]
+        df = df[df['divisionName'].isin(selected_divisions)]  # type: ignore
 
     side.write("Filtered: %s of %s" % (len(df), total))
 
