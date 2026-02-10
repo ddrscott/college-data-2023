@@ -4,7 +4,6 @@
 #   "pandas",
 #   "folium",
 #   "streamlit-folium",
-#   "pyyaml",
 # ]
 # ///
 
@@ -16,22 +15,7 @@ from streamlit_folium import st_folium
 
 DATA_FILE = os.getenv('DATA_FILE', 'dist/utr_costs_df.pkl')
 
-LABELS = os.getenv('LABELS', 'data/labels-en.yaml')
-
-
-def read_translations(src=None):
-    import yaml
-    src = src or LABELS
-    with open(src) as f:
-        return yaml.safe_load(f)
-
-def fetch_translation(key, src=None):
-    return read_translations(src).get(key, key)
-
-st.set_page_config(
-    page_title=fetch_translation('page_title'),
-    layout="wide"
-)
+st.set_page_config(page_title="College Tennis Map", layout="wide")
 
 
 @st.cache_data

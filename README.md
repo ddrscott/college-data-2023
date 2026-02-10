@@ -5,11 +5,9 @@ Interactive map and table for exploring UTR college tennis data with cost inform
 ## Quick Start
 
 ```sh
-uv run --with streamlit --with pandas --with folium --with streamlit-folium --with pyyaml \
+uv run --with streamlit --with pandas --with folium --with streamlit-folium \
   streamlit run map.py
 ```
-
-Note: PEP 723 inline script metadata is in `map.py` for documentation, but streamlit's execution model requires the `--with` flags since streamlit must load the module itself.
 
 Then open http://localhost:8501 in your browser.
 
