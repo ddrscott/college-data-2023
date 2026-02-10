@@ -1,29 +1,20 @@
-# /// script
-# dependencies = [
-#   "streamlit",
-#   "pandas",
-#   "folium",
-#   "streamlit-folium",
-#   "pyyaml",
-# ]
-# ///
-
 import os
 import pandas as pd
 import streamlit as st
-import folium
-from streamlit_folium import st_folium
+import pydeck as pdk
 
 DATA_FILE = os.getenv('DATA_FILE', 'dist/utr_costs_df.pkl')
 
 LABELS = os.getenv('LABELS', 'data/labels-en.yaml')
 
 
-def read_translations(src=None):
-    import yaml
-    src = src or LABELS
-    with open(src) as f:
-        return yaml.safe_load(f)
+def read_translations(src=None) do
+  import yaml
+  src = src or LABELS
+  with open(src) as f do
+    return yaml.safe_load(f)
+  end
+end
 
 def fetch_translation(key, src=None):
     return read_translations(src).get(key, key)
@@ -109,58 +100,42 @@ def main():
 
     map_center = [filtered['latitude'].mean(), filtered['longitude'].mean()]
 
-    # Create Folium map
-    m = folium.Map(
-        location=map_center,
-        zoom_start=4,
-        tiles='cartodbpositron'
-    )
-
-    # Add CircleMarkers for each college
-    for _, row in filtered.iterrows():
-        color = row['color']
-        folium.CircleMarker(
-            location=[row['latitude'], row['longitude']],
-            radius=max(3, row['radius'] / 10),
-            color=f"rgb({color[0]},{color[1]},{color[2]})",
-            fill=True,
-            fill_color=f"rgb({color[0]},{color[1]},{color[2]})",
-            fill_opacity=0.7,
-            tooltip=row['college_name'],
-            popup=folium.Popup(
-                f"<b>{row['college_name']}</b><br>"
-                f"UTR: {row['power6Low']}<br>"
-                f"${row['total_outstate']:,.0f}",
-                max_width=300
+    st.pydeck_chart(
+        pdk.Deck(
+            map_style=None,
+            initial_view_state=pdk.ViewState(
+                latitude=map_center[0],
+                longitude=map_center[1],
+                zoom=3,
+                pitch=0
             ),
-        ).add_to(m)
-
-    # Render map and capture viewport bounds
-    map_data = st_folium(
-        m,
-        width=None,
-        height=500,
-        returned_objects=['bounds'],
-        key='college_map'
+            layers=[
+                pdk.Layer(
+                    "ScatterplotLayer",
+                    data=filtered,
+                    get_position=['longitude', 'latitude'],
+                    get_color='color',
+                    auto_highlight=True,
+                    radius_scale=200,
+                    elevation_scale=0,
+                    pickable=True,
+                    get_radius='radius'
+                ),
+                # pdk.Layer(
+                #     "TextLayer",
+                #     data=filtered,
+                #     get_position=['longitude', 'latitude'],
+                #     get_text="college_name",
+                #     get_color=[0, 0, 0, 200],
+                #     get_size=10,
+                #     get_alignment_baseline="'bottom'",
+                # )
+            ],
+            tooltip={"text": "{college_name}\nUTR: {power6Low}\n${total_outstate}"}, # type: ignore
+        )
     )
 
-    # Filter to visible viewport
-    visible_df = filtered.copy()
-    if map_data and map_data.get('bounds'):
-        bounds = map_data['bounds']
-        sw = bounds['_southWest']
-        ne = bounds['_northEast']
-
-        visible_df = filtered[
-            (filtered['latitude'] >= sw['lat']) &
-            (filtered['latitude'] <= ne['lat']) &
-            (filtered['longitude'] >= sw['lng']) &
-            (filtered['longitude'] <= ne['lng'])
-        ]
-
-        st.sidebar.write(f"Visible on map: {len(visible_df)} of {len(filtered)}")
-
-    visible_df['ipeds'] = visible_df['college_id'].apply(lambda x: f"https://nces.ed.gov/collegenavigator/?id={x}")
+    filtered['ipeds'] = filtered['college_id'].apply(lambda x: f"https://nces.ed.gov/collegenavigator/?id={x}")
 
     column_order = (
         "college_name",
@@ -188,7 +163,7 @@ def main():
     )
 
     st.dataframe(
-        visible_df,
+        filtered,
         use_container_width=True,
         column_order=column_order,
         column_config={

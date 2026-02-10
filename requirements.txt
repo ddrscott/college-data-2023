@@ -8,6 +8,10 @@ attrs==24.3.0
     #   referencing
 blinker==1.9.0
     # via streamlit
+branca==0.8.2
+    # via
+    #   folium
+    #   streamlit-folium
 cachetools==5.5.0
     # via streamlit
 certifi==2024.12.14
@@ -16,8 +20,12 @@ charset-normalizer==3.4.0
     # via requests
 click==8.1.7
     # via streamlit
-colorama==0.4.6 ; platform_system == 'Windows'
+colorama==0.4.6 ; sys_platform == 'win32'
     # via click
+folium==0.20.0
+    # via
+    #   -r requirements.in
+    #   streamlit-folium
 gitdb==4.0.11
     # via gitpython
 gitpython==3.1.43
@@ -27,7 +35,10 @@ idna==3.10
 jinja2==3.1.4
     # via
     #   altair
+    #   branca
+    #   folium
     #   pydeck
+    #   streamlit-folium
 jsonschema==4.23.0
     # via altair
 jsonschema-specifications==2024.10.1
@@ -42,6 +53,7 @@ narwhals==1.19.0
     # via altair
 numpy==2.2.0
     # via
+    #   folium
     #   pandas
     #   pydeck
     #   streamlit
@@ -72,7 +84,9 @@ referencing==0.35.1
     #   jsonschema
     #   jsonschema-specifications
 requests==2.32.3
-    # via streamlit
+    # via
+    #   folium
+    #   streamlit
 rich==13.9.4
     # via streamlit
 rpds-py==0.22.3
@@ -84,6 +98,10 @@ six==1.17.0
 smmap==5.0.1
     # via gitdb
 streamlit==1.41.1
+    # via
+    #   -r requirements.in
+    #   streamlit-folium
+streamlit-folium==0.26.1
     # via -r requirements.in
 tenacity==9.0.0
     # via streamlit
@@ -99,5 +117,7 @@ tzdata==2024.2
     # via pandas
 urllib3==2.2.3
     # via requests
-watchdog==6.0.0 ; platform_system != 'Darwin'
+watchdog==6.0.0 ; sys_platform != 'darwin'
     # via streamlit
+xyzservices==2025.11.0
+    # via folium
