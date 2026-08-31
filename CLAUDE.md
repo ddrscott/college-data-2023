@@ -11,7 +11,8 @@ mention this project; don't go looking for it there.
 | Host | `spierce@192.168.68.10` |
 | Container / image | `college-data-2023` |
 | Ports | `8001` on the host → `8080` in the container |
-| URL | http://192.168.68.10:8001 |
+| URL | https://colleges.dataturd.com (via Cloudflare) |
+| Direct | http://192.168.68.10:8001 |
 | Restart policy | `always` |
 | Source checkout | `~/code/college-data-2023` |
 | Mounts | none — **code is baked into the image** |
@@ -65,5 +66,9 @@ the rollback. `docker image prune` once the new one is known good.
 - The `Dockerfile` installs from `requirements.txt`, not `requirements.in` or
   the PEP-723 header in `map.py`. Adding a dependency means recompiling:
   `uv pip compile requirements.in -o requirements.txt`.
+- **The Plausible tag is injected by the `Dockerfile`**, not by `map.py` --
+  Streamlit has no `<head>` hook. Editing the app will never add or remove it;
+  edit the `sed` in the `Dockerfile`. The `grep` after it is load-bearing: it
+  fails the build if a Streamlit upgrade changes the template.
 - `start.sh` binds `--server.address=0.0.0.0` and honours `$PORT` (8080 in the
   image). Don't hardcode the port in the app.

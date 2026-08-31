@@ -125,10 +125,18 @@ and the `dig*.ipynb` notebooks.
 
 ## Deployment
 
-Runs on the Docker host at http://192.168.68.10:8001 as a plain `docker run`
-container - no compose, no volume mounts, code baked into the image. See
-[CLAUDE.md](CLAUDE.md) for the rebuild steps and the traps (notably:
-`.dockerignore` excludes `data/`, so runtime assets belong in `dist/`).
+Public at https://colleges.dataturd.com, served from the Docker host at
+http://192.168.68.10:8001 as a plain `docker run` container - no compose, no
+volume mounts, code baked into the image. See [CLAUDE.md](CLAUDE.md) for the
+rebuild steps and the traps (notably: `.dockerignore` excludes `data/`, so
+runtime assets belong in `dist/`).
+
+Plausible analytics is injected into Streamlit's prebuilt `index.html` by the
+`Dockerfile`, since Streamlit exposes no hook for `<head>`. `st.markdown` strips
+`<script>`, and `st.components.v1.html` would sandbox it in an iframe that
+reports itself rather than the page. The build asserts the tag landed, so a
+Streamlit upgrade that reshapes the template fails the build instead of
+quietly shipping without analytics.
 
 ```sh
 ssh spierce@192.168.68.10 docker ps | grep college
