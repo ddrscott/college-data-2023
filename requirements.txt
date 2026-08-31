@@ -51,6 +51,7 @@ narwhals==1.19.0
     # via altair
 numpy==2.2.0
     # via
+    #   -r requirements.in
     #   folium
     #   pandas
     #   pydeck
@@ -99,7 +100,10 @@ streamlit==1.41.1
     # via
     #   -r requirements.in
     #   streamlit-folium
+    #   streamlit-js-eval
 streamlit-folium==0.26.1
+    # via -r requirements.in
+streamlit-js-eval==1.0.0
     # via -r requirements.in
 tenacity==9.0.0
     # via streamlit
