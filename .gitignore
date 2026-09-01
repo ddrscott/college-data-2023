@@ -1,3 +1,4 @@
 .duckdb
 .duckdb.wal
 data/
+CLAUDE.local.md

@@ -2,52 +2,24 @@
 
 ## Deployment
 
-The app runs on the Docker host at `192.168.68.10` as a plain `docker run`
-container — **not** compose. `~/docker-compose.yml` on that host does not
-mention this project; don't go looking for it there.
+The app is deployed to a Docker host as a plain `docker run` container —
+**not** compose — with no volume mounts, so the code is baked into the image.
+Changing files on the host does nothing until the image is rebuilt and the
+container recreated.
 
-| | |
-|---|---|
-| Host | `spierce@192.168.68.10` |
-| Container / image | `college-data-2023` |
-| Ports | `8001` on the host → `8080` in the container |
-| URL | https://colleges.dataturd.com (via Cloudflare) |
-| Direct | http://192.168.68.10:8001 |
-| Restart policy | `always` |
-| Source checkout | `~/code/college-data-2023` |
-| Mounts | none — **code is baked into the image** |
+**Host address, ssh account and the exact commands are in `CLAUDE.local.md`,
+which is gitignored** — this repo is public, so internal topology stays out of
+it. Read that file before deploying; the deploy is not reproducible from this
+one alone.
 
-Check what's running:
+The deploy shape, in general terms:
 
-```sh
-ssh spierce@192.168.68.10 docker ps | grep college
-```
-
-### Deploying an update
-
-Because there are no volume mounts, changing files on the host does nothing
-until the image is rebuilt and the container recreated.
-
-```sh
-# 1. ship the working tree (see note on git below)
-printf '%s\n' map.py refresh.py fetch_utr.py fetch_ipeds.sh fetch_zips.sh \
-    requirements.in requirements.txt README.md utr_crosswalk.csv \
-    dist/utr_costs_df.pkl dist/zip_centroids.csv.gz \
-  | rsync -av --files-from=- . spierce@192.168.68.10:code/college-data-2023/
-
-# 2. rebuild
-ssh spierce@192.168.68.10 'cd ~/code/college-data-2023 && docker build -t college-data-2023 .'
-
-# 3. recreate (flags must be repeated -- they live nowhere but here)
-ssh spierce@192.168.68.10 'docker rm -f college-data-2023 && \
-  docker run -d --name college-data-2023 --restart always -p 8001:8080 college-data-2023'
-
-# 4. verify
-ssh spierce@192.168.68.10 'curl -s -o /dev/null -w "%{http_code}\n" localhost:8001/_stcore/health'
-```
-
-`rsync --files-from=-` takes exactly one source dir; listing multiple paths as
-plain args fails with *"Only one src dir allowed with --files-from"*.
+1. Get the code onto the host (push + pull; rsync only for uncommitted work).
+2. `docker build -t college-data-2023 .`
+3. `docker rm -f` the old container, `docker run -d` a new one — the port
+   mapping and restart policy exist nowhere but `CLAUDE.local.md`, so they must
+   be repeated verbatim.
+4. Verify `/_stcore/health` and that the analytics tag is in the served HTML.
 
 `docker rm -f` leaves the previous image dangling. That is deliberate — it is
 the rollback. `docker image prune` once the new one is known good.
@@ -58,11 +30,12 @@ the rollback. `docker image prune` once the new one is known good.
   live in `dist/`, which is why `fetch_zips.sh` writes
   `dist/zip_centroids.csv.gz`. A runtime asset dropped in `data/` builds
   cleanly and then fails on first use inside the container.
-- **`origin` is a public GitHub repo** (`ddrscott/college-data-2023`). Deploying
-  by pushing publishes the work. Prefer rsync unless publishing is intended.
+- **`origin` is a public GitHub repo** (`ddrscott/college-data-2023`). Anything
+  written here is published. Host addresses and accounts belong in
+  `CLAUDE.local.md`.
 - rsync deploys leave the host checkout dirty and diverged from its last
   commit, so the running container's code may exist in no commit anywhere.
-  Verify with `git -C ~/code/college-data-2023 status` on the host.
+  Prefer push-then-pull, and check `git status` on the host afterwards.
 - The `Dockerfile` installs from `requirements.txt`, not `requirements.in` or
   the PEP-723 header in `map.py`. Adding a dependency means recompiling:
   `uv pip compile requirements.in -o requirements.txt`.
